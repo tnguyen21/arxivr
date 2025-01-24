@@ -1,0 +1,49 @@
+{% extends "shared/base.html" %}
+
+{% block content %}
+    <title>ArXiv Papers</title>
+    <h1>Recent ArXiv Papers</h1>
+    <ul>
+    {% for paper in papers %}
+      <li>
+        <h3><a href="{{ paper.abstract_link }}">{{ paper.title }}</a></h3>
+        <p>{{ paper.summary }}</p>
+        <p>Published: {{ paper.published }}</p>
+        <p>Authors: {{ paper.author }}</p>
+        <p>Categories: {{ paper.category }}</p>
+        <p>ArXiv ID: {{ paper.arxiv_id }}</p>
+        <p>
+          <a href="{{ paper.arxiv_link }}">ArXiv</a> |
+          <a href="{{ paper.pdf_link }}">PDF</a>
+        </p>
+        <button class="save-paper-btn" data-paper-id="{{ paper.id }}" onclick="savePaper({{ paper.id }})">Save Paper</button>
+        <script>
+        async function savePaper(paperId) {
+            const userId = localStorage.getItem('user_id');
+            if (!userId) {
+                window.location.href = '/login';
+                return;
+            }
+            
+            const response = await fetch('/papers/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: userId,
+                    paper_id: paperId
+                })
+            });
+
+            if (response.ok) {
+                alert('Paper saved successfully');
+            } else {
+                alert('Error saving paper');
+            }
+        }
+        </script>
+      </li>
+    {% endfor %}
+    </ul>
+{% endblock %}

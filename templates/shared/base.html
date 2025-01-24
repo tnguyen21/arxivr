@@ -1,0 +1,13 @@
+<!doctype html>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='monospace.css') }}">
+    <title>{% block title %}{% endblock %}</title>
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+    {% include 'shared/nav.html' %}
+    {% block content %}
+    {% endblock %}
+</body>
+</html>
