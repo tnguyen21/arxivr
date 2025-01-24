@@ -1,5 +1,6 @@
 from flask import Flask, render_template, g, request, jsonify, redirect, url_for, make_response
 import sqlite3
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -17,6 +18,11 @@ def get_db():
 def index():
     db = get_db()
     papers = db.execute('SELECT * FROM papers ORDER BY published DESC LIMIT 10').fetchall()
+    # Format the published date for each paper
+    # TODO this is messy; we should just store dates in a better format on init/batch insert
+    papers = [dict(paper) for paper in papers]
+    for paper in papers:
+        paper['published'] = datetime.strptime(paper['published'], '%Y-%m-%dT%H:%M:%S%z').strftime('%d %b %Y')
     return render_template('index.html', papers=papers)
 
 @app.route('/about')
@@ -42,6 +48,26 @@ def api_login():
     db.commit()
     user = db.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone()
     return jsonify({'message': 'Login successful', 'user_id': user['id']}), 200
+
+@app.route('/papers/<int:page>')
+def all_papers(page=1):
+    per_page = 10  # Number of papers per page
+    offset = (page - 1) * per_page
+    
+    db = get_db()
+    papers = db.execute('SELECT * FROM papers ORDER BY published DESC LIMIT ? OFFSET ?', 
+                       (per_page, offset)).fetchall()
+    
+    # Get total count of papers for pagination
+    total_papers = db.execute('SELECT COUNT(*) as count FROM papers').fetchone()['count']
+    total_pages = (total_papers + per_page - 1) // per_page  # Ceiling division
+    
+    return render_template('papers.html', 
+                         papers=papers, 
+                         page=page, 
+                         total_pages=total_pages,
+                         has_prev=page > 1,
+                         has_next=page < total_pages)
 
 @app.route('/papers/save', methods=['POST'])
 def save_paper():

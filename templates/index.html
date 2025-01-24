@@ -7,16 +7,18 @@
     {% for paper in papers %}
       <li>
         <h3><a href="{{ paper.abstract_link }}">{{ paper.title }}</a></h3>
-        <p>{{ paper.summary }}</p>
-        <p>Published: {{ paper.published }}</p>
-        <p>Authors: {{ paper.author }}</p>
-        <p>Categories: {{ paper.category }}</p>
-        <p>ArXiv ID: {{ paper.arxiv_id }}</p>
-        <p>
-          <a href="{{ paper.arxiv_link }}">ArXiv</a> |
-          <a href="{{ paper.pdf_link }}">PDF</a>
+        <p class="paper-metadata">
+          <span aria-label="Published date" style="font-style: italic">{{ paper.published }}</span>
+          <span aria-label="Paper category" style="font-weight: bold">{{ paper.category }}</span>
+          <br>
+          <span aria-label="Authors">{{ paper.author }}</span>
         </p>
-        <button class="save-paper-btn" data-paper-id="{{ paper.id }}" onclick="savePaper({{ paper.id }})">Save Paper</button>
+        <p>{{ paper.summary }}</p>
+        <div>
+          <button class="save-paper-btn" data-paper-id="{{ paper.id }}" onclick="savePaper('{{ paper.id }}')">Save Paper</button> |
+          <a href="{{ paper.arxiv_link }}">ArXiv</a> |
+          <a href="{{ paper.pdf_link }}">PDF</a> |
+        </div>
         <script>
         async function savePaper(paperId) {
             const userId = localStorage.getItem('user_id');

@@ -528,3 +528,10 @@ label input {
 .debug-toggle-label {
   text-align: right;
 }
+
+/* custom styles */
+
+.paper-metadata {
+  font-size: 0.8em;
+  color: var(--text-color-alt);
+}
