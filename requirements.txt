@@ -1,3 +1,4 @@
 arxiv
 flask
 cssmin
+hnswlib
