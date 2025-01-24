@@ -2,3 +2,5 @@ arxiv
 flask
 cssmin
 hnswlib
+numpy
+voyageai
