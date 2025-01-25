@@ -13,17 +13,25 @@ def get_db():
         db.row_factory = sqlite3.Row
     return db
 
-
 @app.route('/')
 def index():
     db = get_db()
-    papers = db.execute('SELECT * FROM papers LIMIT 10').fetchall()
+    per_page = 10  # Number of papers per page
+    page = request.args.get('page', 1, type=int)  # Get the page number from the query parameters
+    offset = (page - 1) * per_page
+    
+    papers = db.execute('SELECT * FROM papers ORDER BY published DESC LIMIT ? OFFSET ?', (per_page, offset)).fetchall()
+    
     # Format the published date for each paper
-    # TODO this is messy; we should just store dates in a better format on init/batch insert
     papers = [dict(paper) for paper in papers]
     for paper in papers:
         paper['published'] = datetime.strptime(paper['published'], '%Y-%m-%dT%H:%M:%S%z').strftime('%d %b %Y')
-    return render_template('index.html', papers=papers)
+    
+    # Get total count of papers for pagination
+    total_papers = db.execute('SELECT COUNT(*) as count FROM papers').fetchone()['count']
+    total_pages = (total_papers + per_page - 1) // per_page  # Ceiling division
+    
+    return render_template('index.html', papers=papers, page=page, total_pages=total_pages, has_prev=page > 1, has_next=page < total_pages)
 
 @app.route('/about')
 def about():
