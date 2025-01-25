@@ -17,7 +17,7 @@ def get_db():
 @app.route('/')
 def index():
     db = get_db()
-    papers = db.execute('SELECT * FROM papers ORDER BY published DESC LIMIT 10').fetchall()
+    papers = db.execute('SELECT * FROM papers LIMIT 10').fetchall()
     # Format the published date for each paper
     # TODO this is messy; we should just store dates in a better format on init/batch insert
     papers = [dict(paper) for paper in papers]
@@ -79,6 +79,23 @@ def save_paper():
     db.execute('INSERT INTO user_saved_papers (user_id, paper_id) VALUES (?, ?)', (user_id, paper_id))
     db.commit()
     return jsonify({'message': 'Paper saved successfully'}), 200
+
+@app.route('/papers/unsave', methods=['POST'])
+def unsave_paper():
+    data = request.get_json()
+    user_id = data.get('user_id')
+    paper_id = data.get('paper_id')
+    print("DEBUG", user_id, paper_id)
+    db = get_db()
+    
+    # Check if the paper exists before attempting to delete
+    result = db.execute('DELETE FROM user_saved_papers WHERE user_id = ? AND paper_id = ?', (user_id, paper_id))
+    db.commit()
+    
+    if result.rowcount > 0:
+        return jsonify({'message': 'Paper unsaved successfully'}), 200
+    else:
+        return jsonify({'message': 'Paper not found or already unsaved'}), 404
 
 @app.route('/papers/saved')
 def saved():

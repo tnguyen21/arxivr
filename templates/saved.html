@@ -9,6 +9,36 @@
     <ul>
     {% for paper in papers %}
         <li>{{ paper.title }}</li>
+        <form action="/papers/unsave" method="post" class="unsave-form" onsubmit="submitForm(event)">
+            <input type="hidden" name="paper_id" value="{{ paper.id }}">
+            <input type="hidden" name="user_id" value="{{ request.cookies.get('user_id') }}">
+            <button type="submit">Unsave</button>
+        </form>
+        <script>
+            function submitForm(event) {
+                event.preventDefault();
+                const form = event.target;
+                const data = {
+                    paper_id: form.paper_id.value,
+                    user_id: form.user_id.value
+                };
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+            }
+        </script>
+        </form>
     {% endfor %}    
     </ul>
 {% endblock %}
