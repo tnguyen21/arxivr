@@ -1,8 +1,7 @@
 <!doctype html>
 <head>
     <link rel="stylesheet" href="{{ url_for('static', filename='monospace.css') }}">
-    <title>{% block title %}{% endblock %}</title>
-    {% block extra_head %}{% endblock %}
+    <title>arxivchan{% if page_title %} | {{ page_title }}{% endif %}</title>
 </head>
 
 <body>

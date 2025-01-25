@@ -35,11 +35,11 @@ def index():
 
 @app.route('/about')
 def about():
-    return render_template('about.html')
+    return render_template('about.html', page_title="About")
 
 @app.route('/login')
 def login():
-    return render_template('login.html')
+    return render_template('login.html', page_title="Login")
 
 @app.route('/logout')
 def logout():
@@ -75,7 +75,8 @@ def all_papers(page=1):
                          page=page, 
                          total_pages=total_pages,
                          has_prev=page > 1,
-                         has_next=page < total_pages)
+                         has_next=page < total_pages,
+                         page_title="All Papers")
 
 @app.route('/papers/save', methods=['POST'])
 def save_paper():
@@ -112,7 +113,7 @@ def saved():
         return redirect(url_for('login'))
     db = get_db()
     papers = db.execute('SELECT * FROM papers WHERE id IN (SELECT paper_id FROM user_saved_papers WHERE user_id = ?)', (user_id,)).fetchall()
-    return render_template('saved.html', papers=papers)
+    return render_template('saved.html', papers=papers, page_title="Saved Papers")
 
 @app.teardown_appcontext
 def close_connection(exception):
