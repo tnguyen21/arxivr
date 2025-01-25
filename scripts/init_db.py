@@ -26,6 +26,21 @@ def init_db(schema_file, db_file):
     db.commit()
 
 
+def extract_paper_data(entry):
+    title = entry.find('{http://www.w3.org/2005/Atom}title').text
+    arxiv_id = entry.find('{http://www.w3.org/2005/Atom}id').text
+    published = entry.find('{http://www.w3.org/2005/Atom}published').text
+    updated = entry.find('{http://www.w3.org/2005/Atom}updated').text
+    summary = entry.find('{http://www.w3.org/2005/Atom}summary').text
+    authors = ", ".join([author.find('{http://www.w3.org/2005/Atom}name').text for author in entry.findall('{http://www.w3.org/2005/Atom}author')])
+    categories = ", ".join([category.get('term') for category in entry.findall('{http://www.w3.org/2005/Atom}category')])
+    pdf_url = arxiv_id.replace('abs', 'pdf') if arxiv_id else None
+    abstract_url = arxiv_id
+    arxiv_url = arxiv_id
+
+    return (title, arxiv_id, published, updated, summary, 
+            authors, categories, pdf_url, abstract_url, arxiv_url)
+
 def scrape_arxiv(category: List[str], start_date: str, end_date: str, db_file: str, max_results: int = 100):
     query = format_arxiv_query(
         category=category,
@@ -56,21 +71,6 @@ def scrape_arxiv(category: List[str], start_date: str, end_date: str, db_file: s
             logging.info(ARXIV_EXPORT_URL + query)
             retries = 0
             papers_to_insert = []  # Collect papers to insert in a batch
-            
-            def extract_paper_data(entry):
-                title = entry.find('{http://www.w3.org/2005/Atom}title').text
-                arxiv_id = entry.find('{http://www.w3.org/2005/Atom}id').text
-                published = entry.find('{http://www.w3.org/2005/Atom}published').text
-                updated = entry.find('{http://www.w3.org/2005/Atom}updated').text
-                summary = entry.find('{http://www.w3.org/2005/Atom}summary').text
-                authors = ", ".join([author.find('{http://www.w3.org/2005/Atom}name').text for author in entry.findall('{http://www.w3.org/2005/Atom}author')])
-                categories = ", ".join([category.get('term') for category in entry.findall('{http://www.w3.org/2005/Atom}category')])
-                pdf_url = arxiv_id.replace('abs', 'pdf') if arxiv_id else None
-                abstract_url = arxiv_id
-                arxiv_url = arxiv_id
-
-                return (title, arxiv_id, published, updated, summary, 
-                        authors, categories, pdf_url, abstract_url, arxiv_url)
 
             while retries < 3:  # Retry logic for the query
                 response = requests.get(ARXIV_EXPORT_URL + query)
@@ -122,16 +122,15 @@ def scrape_arxiv(category: List[str], start_date: str, end_date: str, db_file: s
             resume_file.write(f"max_results={max_results}\n")
             resume_file.write(f"total_results={total_results}\n")
     
-
     db.close()
 
 if __name__ == '__main__':
     schema_file = sys.argv[1] if len(sys.argv) > 1 else 'schema.sql'
     db_file = sys.argv[2] if len(sys.argv) > 2 else 'papers.db'
-    init_db(schema_file, db_file)
+    # init_db(schema_file, db_file)
     
-    start_year = 2021
-    end_year = 2022
+    start_year = 2022
+    end_year = 2024
     cats = ['cs.CL', 'cs.AI', 'cs.MA', 'cs.CV', 'cs.LG', 'cs.RO', 'cs.SY', 'cs.SI', 'cs.HC', 'cs.IR'] 
 
     # better to query all categories at once
