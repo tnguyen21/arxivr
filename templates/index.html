@@ -10,15 +10,11 @@
         <p class="paper-metadata">
           <span aria-label="Published date" style="font-style: italic">{{ paper.published }}</span>
           <span aria-label="Paper category" style="font-weight: bold">{{ paper.category }}</span>
+          <a href="#" class="save-paper-link" data-paper-id="{{ paper.id }}" onclick="savePaper('{{ paper.id }}')" aria-label="Save {{ paper.title }} to my papers">Save Paper</a>
           <br>
           <span aria-label="Authors">{{ paper.author }}</span>
         </p>
         <p>{{ paper.summary }}</p>
-        <div>
-          <button class="save-paper-btn" data-paper-id="{{ paper.id }}" onclick="savePaper('{{ paper.id }}')">Save Paper</button> |
-          <a href="{{ paper.arxiv_link }}">ArXiv</a> |
-          <a href="{{ paper.pdf_link }}">PDF</a> |
-        </div>
         <script>
         async function savePaper(paperId) {
             const userId = localStorage.getItem('user_id');
