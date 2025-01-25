@@ -91,8 +91,8 @@ def scrape_arxiv(category: List[str], start_date: str, end_date: str, db_file: s
                 logging.error(f"Failed to retrieve papers for query: {query}")
                 with open('failed_queries.txt', 'a') as failed_file:
                     failed_file.write(f"Failed query: {query}\n")
-                retries = 0  # Reset retries to continue to the next query
-                continue  # Go to the next query
+                start += max_results
+                continue  # Go to the next page of the query
 
             # Insert all papers in one go
             try:
@@ -103,10 +103,8 @@ def scrape_arxiv(category: List[str], start_date: str, end_date: str, db_file: s
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''', papers_to_insert)
             except Exception as e:
-                logging.error(f"Failed to insert paper data for arxiv_id: {arxiv_id}")
-                with open('failed_papers.txt', 'a') as log_file:
-                    log_file.write(f"Error inserting paper data for arxiv_id: {arxiv_id}\n")
-            
+                logging.error(f"Failed to insert paper data for arxiv_id")
+
             db.commit()
             logging.info(f"papers db has {cursor.execute('SELECT COUNT(*) FROM papers').fetchone()[0]} papers")
             
