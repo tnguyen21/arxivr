@@ -57,38 +57,53 @@ def scrape_arxiv(category: List[str], start_date: str, end_date: str, db_file: s
             total_results_element = root.find('{http://a9.com/-/spec/opensearch/1.1/}totalResults')
             total_results = int(total_results_element.text) if total_results_element is not None else -1
 
-            if total_results == -1:
-                logging.error(f"Failed to fetch total results for query: {query}")
-                break
-
             logging.info(f"{total_results=}, {start=}, {max_results=}")
-            for entry in root.findall('{http://www.w3.org/2005/Atom}entry'):
-                title = entry.find('{http://www.w3.org/2005/Atom}title').text
-                arxiv_id = entry.find('{http://www.w3.org/2005/Atom}id').text
-                published = entry.find('{http://www.w3.org/2005/Atom}published').text
-                updated = entry.find('{http://www.w3.org/2005/Atom}updated').text
-                summary = entry.find('{http://www.w3.org/2005/Atom}summary').text
-                authors = ", ".join([author.find('{http://www.w3.org/2005/Atom}name').text for author in entry.findall('{http://www.w3.org/2005/Atom}author')])
-                categories = ", ".join([category.get('term') for category in entry.findall('{http://www.w3.org/2005/Atom}category')])
-                pdf_url = arxiv_id.replace('abs', 'pdf') if arxiv_id else None
-                abstract_url = arxiv_id
-                arxiv_url = arxiv_id
+            papers_to_insert = []  # Collect papers to insert in a batch
+            
+            # Retry logic if no papers found
+            retries = 0
+            while total_results > 0 and retries < 3:
+                for entry in root.findall('{http://www.w3.org/2005/Atom}entry'):
+                    title = entry.find('{http://www.w3.org/2005/Atom}title').text
+                    arxiv_id = entry.find('{http://www.w3.org/2005/Atom}id').text
+                    published = entry.find('{http://www.w3.org/2005/Atom}published').text
+                    updated = entry.find('{http://www.w3.org/2005/Atom}updated').text
+                    summary = entry.find('{http://www.w3.org/2005/Atom}summary').text
+                    authors = ", ".join([author.find('{http://www.w3.org/2005/Atom}name').text for author in entry.findall('{http://www.w3.org/2005/Atom}author')])
+                    categories = ", ".join([category.get('term') for category in entry.findall('{http://www.w3.org/2005/Atom}category')])
+                    pdf_url = arxiv_id.replace('abs', 'pdf') if arxiv_id else None
+                    abstract_url = arxiv_id
+                    arxiv_url = arxiv_id
 
-                paper_data = (
-                    title, arxiv_id, published, updated, summary, 
-                    authors, categories, pdf_url, abstract_url, arxiv_url
-                )
-                try:
-                    cursor.execute('''
-                        INSERT INTO papers (
-                            title, arxiv_id, published, updated, summary, 
-                            author, category, pdf_link, abstract_link, arxiv_link
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    ''', paper_data)
-                except Exception as e:
-                    logging.error(f"Failed to insert paper data into database: {e}")
-                    with open('log.txt', 'a') as log_file:
-                        log_file.write(f"Error inserting paper data: {e}\n")
+                    paper_data = (
+                        title, arxiv_id, published, updated, summary, 
+                        authors, categories, pdf_url, abstract_url, arxiv_url
+                    )
+                    papers_to_insert.append(paper_data)  # Add paper data to the list
+                
+                if not papers_to_insert:  # If no papers found, retry the query
+                    retries += 1
+                    logging.warning(f"No papers found, retrying the query... (Attempt {retries}/3)")
+                    time.sleep(5)  # Wait before retrying
+                    response = requests.get(ARXIV_EXPORT_URL + query)
+                    root = ET.fromstring(response.text)
+                    total_results_element = root.find('{http://a9.com/-/spec/opensearch/1.1/}totalResults')
+                    total_results = int(total_results_element.text) if total_results_element is not None else -1
+                else:
+                    break
+
+            # Insert all papers in one go
+            try:
+                cursor.executemany('''
+                    INSERT INTO papers (
+                        title, arxiv_id, published, updated, summary, 
+                        author, category, pdf_link, abstract_link, arxiv_link
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', papers_to_insert)
+            except Exception as e:
+                logging.error(f"Failed to insert paper data into database: {e}")
+                with open('log.txt', 'a') as log_file:
+                    log_file.write(f"Error inserting paper data: {e}\n")
             db.commit()
 
             start += max_results
@@ -121,5 +136,5 @@ if __name__ == '__main__':
         start_date=start_date,
         end_date=end_date,
         db_file=db_file,
-        max_results=1000
+        max_results=500
     )
