@@ -10,9 +10,10 @@
         <p class="paper-metadata">
           <span aria-label="Published date" style="font-style: italic">{{ paper.published }}</span>
           <span aria-label="Paper category" style="font-weight: bold">{{ paper.category }}</span>
-          <a href="#" class="save-paper-link" data-paper-id="{{ paper.id }}" onclick="savePaper('{{ paper.id }}')" aria-label="Save {{ paper.title }} to my papers">Save Paper</a>
           <br>
           <span aria-label="Authors">{{ paper.author }}</span>
+          <br>
+          <a href="#" class="save-paper-link" data-paper-id="{{ paper.id }}" onclick="savePaper('{{ paper.id }}')" aria-label="Save {{ paper.title }} to my papers">Save Paper</a>
         </p>
         <p>{{ paper.summary }}</p>
         <script>
