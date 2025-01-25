@@ -31,10 +31,15 @@ def scrape_arxiv(category: List[str], start_date: str, end_date: str, db_file: s
         category=category,
         start_date=start_date,
         end_date=end_date,
-        max_results=max_results
+        max_results=10
     )
-    total_results = 1
     start = 0
+
+    response = requests.get(ARXIV_EXPORT_URL + query)
+    root = ET.fromstring(response.text)
+    total_results_element = root.find('{http://a9.com/-/spec/opensearch/1.1/}totalResults')
+    total_results = int(total_results_element.text) if total_results_element is not None else -1
+    logging.info(f"total_results: {total_results}")
 
     db = sqlite3.connect(db_file)
     cursor = db.cursor()
@@ -50,29 +55,9 @@ def scrape_arxiv(category: List[str], start_date: str, end_date: str, db_file: s
             )
             logging.info(ARXIV_EXPORT_URL + query)
             retries = 0
-            while retries < 3:  # Retry logic for the query
-                response = requests.get(ARXIV_EXPORT_URL + query)
-                root = ET.fromstring(response.text)
-                total_results_element = root.find('{http://a9.com/-/spec/opensearch/1.1/}totalResults')
-                total_results = int(total_results_element.text) if total_results_element is not None else -1
-
-                if total_results > 0:
-                    break  # Exit the retry loop if results are found
-
-                retries += 1
-                logging.warning(f"No papers found, retrying the query... (Attempt {retries}/3)")
-                time.sleep(5)  # Wait before retrying
-
-            if total_results == 0:
-                logging.error(f"Failed to retrieve papers for query: {query}")
-                with open('failed_queries.txt', 'a') as failed_file:
-                    failed_file.write(f"Failed query: {query}\n")
-                break
-
-            logging.info(f"{total_results=}, {start=}, {max_results=}")
             papers_to_insert = []  # Collect papers to insert in a batch
             
-            for entry in root.findall('{http://www.w3.org/2005/Atom}entry'):
+            def extract_paper_data(entry):
                 title = entry.find('{http://www.w3.org/2005/Atom}title').text
                 arxiv_id = entry.find('{http://www.w3.org/2005/Atom}id').text
                 published = entry.find('{http://www.w3.org/2005/Atom}published').text
@@ -84,12 +69,30 @@ def scrape_arxiv(category: List[str], start_date: str, end_date: str, db_file: s
                 abstract_url = arxiv_id
                 arxiv_url = arxiv_id
 
-                paper_data = (
-                    title, arxiv_id, published, updated, summary, 
-                    authors, categories, pdf_url, abstract_url, arxiv_url
-                )
-                papers_to_insert.append(paper_data)  # Add paper data to the list
-           
+                return (title, arxiv_id, published, updated, summary, 
+                        authors, categories, pdf_url, abstract_url, arxiv_url)
+
+            while retries < 3:  # Retry logic for the query
+                response = requests.get(ARXIV_EXPORT_URL + query)
+                root = ET.fromstring(response.text)
+
+                papers_to_insert = []  # Reset the list for each attempt
+                for entry in root.findall('{http://www.w3.org/2005/Atom}entry'):
+                    papers_to_insert.append(extract_paper_data(entry))  # Add paper data to the list
+
+                if papers_to_insert:
+                    break  # Exit the retry loop if papers are found
+
+                retries += 1
+                logging.warning(f"No papers found, retrying the query... (Attempt {retries}/3)")
+                time.sleep(5)  # Wait before retrying
+
+            if not papers_to_insert:
+                logging.error(f"Failed to retrieve papers for query: {query}")
+                with open('failed_queries.txt', 'a') as failed_file:
+                    failed_file.write(f"Failed query: {query}\n")
+                retries = 0  # Reset retries to continue to the next query
+                continue  # Go to the next query
 
             # Insert all papers in one go
             try:
