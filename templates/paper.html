@@ -1,0 +1,48 @@
+{% extends "shared/base.html" %}
+
+{% block content %}
+    <h1>{{ paper.title }}</h1>
+    <p>{{ paper.summary }}</p>
+    <button class="save-paper-link" style="font-size: 0.8rem;" data-paper-id="{{ paper.id }}" onclick="savePaper('{{ paper.id }}')" aria-label="Save {{ paper.title }} to my papers">Save Paper</button>
+    <a href="{{ paper.abstract_link }}" aria-label="View {{ paper.title }} on arXiv">View on arXiv</a>
+    
+    <h2>You may also like:</h2>
+    <ul>
+        {% for paper in similar_papers %}
+            <li><a href="{{ url_for('paper', paper_id=paper.id) }}">{{ paper.title }}</a></li>
+        {% endfor %}
+    </ul>
+        
+    <script>
+        async function savePaper(paperId) {
+            const userId = localStorage.getItem('user_id');
+            if (!userId) {
+                window.location.href = '/login';
+                return;
+            }
+            
+            const response = await fetch('/papers/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: userId,
+                    paper_id: paperId
+                })
+            });
+
+            const snackbar = document.createElement('div');
+            snackbar.className = 'snackbar';
+            snackbar.textContent = response.ok ? 'Paper saved successfully' : 'Error saving paper';
+            document.body.appendChild(snackbar);
+            setTimeout(() => {
+                snackbar.classList.add('show');
+            }, 100);
+            setTimeout(() => {
+                snackbar.classList.remove('show');
+                document.body.removeChild(snackbar);
+            }, 1100);
+        }
+        </script>
+{% endblock %}

@@ -25,9 +25,9 @@
     <ul>
     {% for paper in papers %}
       <li>
-        <h3><a href="{{ paper.abstract_link }}">{{ paper.title }}</a></h3>
+        <h3><a href="{{ url_for('paper', paper_id=paper.id) }}">{{ paper.title }}</a></h3>
         <p class="paper-metadata">
-          <span aria-label="Published date" style="font-style: italic">{{ paper.published }}</span>
+          <span aria-label="Published date" style="font-style: italic">{{ paper.published }}</span> |
           <span aria-label="Paper category" style="font-weight: bold">{{ paper.category }}</span>
           <br>
           <span aria-label="Authors">{{ paper.author }}</span>
@@ -35,6 +35,7 @@
         </p>
         <p>{{ paper.summary }}</p>
         <button class="save-paper-link" style="font-size: 0.8rem;" data-paper-id="{{ paper.id }}" onclick="savePaper('{{ paper.id }}')" aria-label="Save {{ paper.title }} to my papers">Save Paper</button>
+        <a href="{{ paper.abstract_link }}" aria-label="View {{ paper.title }} on arXiv">View on arXiv</a>
         <script>
         async function savePaper(paperId) {
             const userId = localStorage.getItem('user_id');

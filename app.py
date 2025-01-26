@@ -58,6 +58,13 @@ def api_login():
     user = db.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone()
     return jsonify({'message': 'Login successful', 'user_id': user['id']}), 200
 
+@app.route('/papers/<int:paper_id>')
+def paper(paper_id):
+    db = get_db()
+    paper = db.execute('SELECT * FROM papers WHERE id = ?', (paper_id,)).fetchone()
+    similar_papers = db.execute('SELECT * FROM papers WHERE category = ? AND id != ? LIMIT 10', (paper['category'], paper_id)).fetchall()
+    return render_template('paper.html', paper=paper, similar_papers=similar_papers, page_title="Paper")
+
 @app.route('/papers/save', methods=['POST'])
 def save_paper():
     data = request.get_json()
