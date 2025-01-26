@@ -95,7 +95,6 @@ def unsave_paper():
     data = request.get_json()
     user_id = data.get('user_id')
     paper_id = data.get('paper_id')
-    print("DEBUG", user_id, paper_id)
     db = get_db()
     
     # Check if the paper exists before attempting to delete
