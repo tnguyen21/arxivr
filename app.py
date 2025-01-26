@@ -19,19 +19,22 @@ def index():
     db = get_db()
     per_page = 10  # Number of papers per page
     page = request.args.get('page', 1, type=int)  # Get the page number from the query parameters
+    category = request.args.get('category', None)
     offset = (page - 1) * per_page
-    
-    papers = db.execute('SELECT * FROM papers ORDER BY published DESC LIMIT ? OFFSET ?', (per_page, offset)).fetchall()
+    if category:
+        papers = db.execute('SELECT * FROM papers WHERE category LIKE ? ORDER BY published DESC LIMIT ? OFFSET ?', ('%' + category + '%', per_page, offset)).fetchall()
+        total_papers = db.execute('SELECT COUNT(*) as count FROM papers WHERE category LIKE ?', ('%' + category + '%',)).fetchone()['count']
+    else:
+        papers = db.execute('SELECT * FROM papers ORDER BY published DESC LIMIT ? OFFSET ?', (per_page, offset)).fetchall()
+        total_papers = db.execute('SELECT COUNT(*) as count FROM papers').fetchone()['count']
     
     # Format the published date for each paper
     papers = [dict(paper) for paper in papers]
     for paper in papers:
         paper['published'] = datetime.strptime(paper['published'], '%Y-%m-%dT%H:%M:%S%z').strftime('%d %b %Y')
     
-    # Get total count of papers for pagination
-    total_papers = db.execute('SELECT COUNT(*) as count FROM papers').fetchone()['count']
+    # Get total count of papers for pagination, considering the category filter
     total_pages = (total_papers + per_page - 1) // per_page  # Ceiling division
-    
     return render_template('index.html', papers=papers, page=page, total_pages=total_pages, has_prev=page > 1, has_next=page < total_pages, categories=CATEGORIES)
 
 @app.route('/about')

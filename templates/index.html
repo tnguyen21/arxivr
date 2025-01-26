@@ -2,24 +2,23 @@
 
 {% block content %}
     <h1>arxivchan</h1>
-    <input type="text" id="search-bar" placeholder="Search papers..." aria-label="Search papers">
+    <!-- <input type="text" id="search-bar" placeholder="Search papers..." aria-label="Search papers"> -->
     <div class="grid">
         <select id="filter-dropdown" aria-label="Filter by category">
-            <option value="">All Categories</option>
+            <option value="" {% if request.args.get('category') is none %}selected{% endif %}>All Categories</option>
             {% for category in categories %}
-                <option value="{{ category }}">{{ category }}</option>
+                <option value="{{ category }}" {% if request.args.get('category') == category %}selected{% endif %}>{{ category }}</option>
             {% endfor %}
         </select>
         <button onclick="filterPapers()">Search</button>
     </div>
     <script>
         function filterPapers() {
-            const searchTerm = document.getElementById('search-bar').value.toLowerCase();
-            const selectedCategory = document.getElementById('filter-dropdown').value;
-            // TODO: Implement filtering logic
-            // Logic to filter papers based on searchTerm and selectedCategory
-            // This can be implemented based on how the papers are rendered or fetched
-            console.log('Searching for:', searchTerm, 'in category:', selectedCategory);
+            // const searchBar = document.getElementById('search-bar');
+            const filterDropdown = document.getElementById('filter-dropdown');
+            // const searchTerm = searchBar ? searchBar.value.toLowerCase() : '';
+            const selectedCategory = filterDropdown ? filterDropdown.value : '';
+            window.location.href = '/?category=' + selectedCategory;
         }
     </script>
     <ul>
@@ -73,13 +72,13 @@
     </ul>
     <div class="pagination">
         {% if has_prev %}
-            <a href="{{ url_for('index', page=page-1) }}">&laquo; Previous</a>
+            <a href="{{ url_for('index', page=page-1, category=request.args.get('category')) }}">&laquo; Previous</a>
         {% endif %}
         
         <span>Page {{ page }} of {{ total_pages }}</span>
         
         {% if has_next %}
-            <a href="{{ url_for('index', page=page+1) }}">Next &raquo;</a>
+            <a href="{{ url_for('index', page=page+1, category=request.args.get('category')) }}">Next &raquo;</a>
         {% endif %}
     </div>
     </ul>
