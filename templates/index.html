@@ -32,9 +32,9 @@
           <br>
           <span aria-label="Authors">{{ paper.author }}</span>
           <br>
-          <a href="#" class="save-paper-link" data-paper-id="{{ paper.id }}" onclick="savePaper('{{ paper.id }}')" aria-label="Save {{ paper.title }} to my papers">Save Paper</a>
         </p>
         <p>{{ paper.summary }}</p>
+        <button class="save-paper-link" style="font-size: 0.8rem;" data-paper-id="{{ paper.id }}" onclick="savePaper('{{ paper.id }}')" aria-label="Save {{ paper.title }} to my papers">Save Paper</button>
         <script>
         async function savePaper(paperId) {
             const userId = localStorage.getItem('user_id');
@@ -54,11 +54,17 @@
                 })
             });
 
-            if (response.ok) {
-                alert('Paper saved successfully');
-            } else {
-                alert('Error saving paper');
-            }
+            const snackbar = document.createElement('div');
+            snackbar.className = 'snackbar';
+            snackbar.textContent = response.ok ? 'Paper saved successfully' : 'Error saving paper';
+            document.body.appendChild(snackbar);
+            setTimeout(() => {
+                snackbar.classList.add('show');
+            }, 100);
+            setTimeout(() => {
+                snackbar.classList.remove('show');
+                document.body.removeChild(snackbar);
+            }, 1100);
         }
         </script>
       </li>
