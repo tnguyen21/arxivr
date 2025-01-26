@@ -397,6 +397,30 @@ input[type=checkbox]:checked:before {
   background: var(--text-color);
 }
 
+select {
+  border: var(--border-thickness) solid var(--text-color);
+  padding: calc(var(--line-height) / 2) calc(1ch - var(--border-thickness) / 2);
+  margin: 0;
+  font: inherit;
+  height: calc(var(--line-height) * 2);
+  background: var(--background-color);
+  color: var(--text-color);
+  line-height: normal;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-weight: var(--font-weight-medium);
+}
+
+select:hover {
+  background: var(--background-color-alt);
+}
+select:focus {
+  --border-thickness: 3px;
+  outline: none;
+}
+
+
 button:focus, input:focus {
   --border-thickness: 3px;
   outline: none;

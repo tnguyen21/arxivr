@@ -5,6 +5,7 @@ from datetime import datetime
 app = Flask(__name__)
 
 DATABASE = 'papers.db'
+CATEGORIES = ['cs.CL', 'cs.AI', 'cs.MA', 'cs.CV', 'cs.LG', 'cs.RO', 'cs.SY', 'cs.SI', 'cs.HC', 'cs.IR'] 
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -31,7 +32,7 @@ def index():
     total_papers = db.execute('SELECT COUNT(*) as count FROM papers').fetchone()['count']
     total_pages = (total_papers + per_page - 1) // per_page  # Ceiling division
     
-    return render_template('index.html', papers=papers, page=page, total_pages=total_pages, has_prev=page > 1, has_next=page < total_pages)
+    return render_template('index.html', papers=papers, page=page, total_pages=total_pages, has_prev=page > 1, has_next=page < total_pages, categories=CATEGORIES)
 
 @app.route('/about')
 def about():
