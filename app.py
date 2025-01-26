@@ -58,27 +58,6 @@ def api_login():
     user = db.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone()
     return jsonify({'message': 'Login successful', 'user_id': user['id']}), 200
 
-@app.route('/papers/<int:page>')
-def all_papers(page=1):
-    per_page = 10  # Number of papers per page
-    offset = (page - 1) * per_page
-    
-    db = get_db()
-    papers = db.execute('SELECT * FROM papers ORDER BY published DESC LIMIT ? OFFSET ?', 
-                       (per_page, offset)).fetchall()
-    
-    # Get total count of papers for pagination
-    total_papers = db.execute('SELECT COUNT(*) as count FROM papers').fetchone()['count']
-    total_pages = (total_papers + per_page - 1) // per_page  # Ceiling division
-    
-    return render_template('papers.html', 
-                         papers=papers, 
-                         page=page, 
-                         total_pages=total_pages,
-                         has_prev=page > 1,
-                         has_next=page < total_pages,
-                         page_title="All Papers")
-
 @app.route('/papers/save', methods=['POST'])
 def save_paper():
     data = request.get_json()

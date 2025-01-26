@@ -1,7 +1,6 @@
 <nav>
     <a href="{{ url_for('index') }}">Home</a>
     <a href="{{ url_for('about') }}">About</a>
-    <a href="{{ url_for('all_papers', page=1) }}">All Papers</a>
     {% if request.cookies.get('user_id') %}
         <a href="{{ url_for('saved') }}">Saved Papers</a>
         <a href="{{ url_for('logout') }}">Logout</a>
