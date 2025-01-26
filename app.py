@@ -21,6 +21,8 @@ def index():
     page = request.args.get('page', 1, type=int)  # Get the page number from the query parameters
     category = request.args.get('category', None)
     offset = (page - 1) * per_page
+
+    # TODO figure out better scheme and indexes to make this faster if we need to
     if category:
         papers = db.execute('SELECT * FROM papers WHERE category LIKE ? ORDER BY published DESC LIMIT ? OFFSET ?', ('%' + category + '%', per_page, offset)).fetchall()
         total_papers = db.execute('SELECT COUNT(*) as count FROM papers WHERE category LIKE ?', ('%' + category + '%',)).fetchone()['count']
@@ -28,6 +30,7 @@ def index():
         papers = db.execute('SELECT * FROM papers ORDER BY published DESC LIMIT ? OFFSET ?', (per_page, offset)).fetchall()
         total_papers = db.execute('SELECT COUNT(*) as count FROM papers').fetchone()['count']
     
+    # TODO this will slow down the page load; should just have nicely formatted dates in the database
     # Format the published date for each paper
     papers = [dict(paper) for paper in papers]
     for paper in papers:
