@@ -57,6 +57,8 @@ def index():
 def about():
     return render_template('about.html', page_title="About")
 
+# === Auth Routes ===
+
 @app.route('/login')
 def login():
     return render_template('login.html', page_title="Login")
@@ -76,6 +78,8 @@ def api_login():
     db.commit()
     user = db.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone()
     return jsonify({'message': 'Login successful', 'user_id': user['id']}), 200
+
+# === Paper Routes ===
 
 @app.route('/papers/<int:paper_id>')
 def paper(paper_id):
