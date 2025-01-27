@@ -3,3 +3,7 @@ cssmin
 hnswlib
 numpy
 voyageai
+transformers
+sentencepiece
+torch
+protobuf
