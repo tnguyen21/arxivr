@@ -83,6 +83,8 @@ def paper(paper_id):
     db = get_db()
     paper = db.execute('SELECT * FROM papers WHERE id = ?', (paper_id,)).fetchone()
     vec = vector_index.get_items([paper_id])
+    # TODO figure out how to nicely render distances in template
+    # TODO do we want to do a simpler BM25 or TF-IDF search instead to initially get similar papers?, then use the vector index for the final results?
     ids, _ = vector_index.knn_query(vec, k=10)
     similar_papers = db.execute(f"SELECT * FROM papers WHERE id IN ({','.join(map(str, ids[0]))})").fetchall()
     return render_template('paper.html', paper=paper, similar_papers=similar_papers, page_title="Paper")
