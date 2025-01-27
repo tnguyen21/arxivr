@@ -1,8 +1,8 @@
 {% extends "shared/base.html" %}
 
 {% block content %}
-    <h1>arxivchan</h1>
-    <!-- <input type="text" id="search-bar" placeholder="Search papers..." aria-label="Search papers"> -->
+    <h1>arxivr</h1>
+    <input type="text" id="search-bar" placeholder="Search papers..." aria-label="Search papers">
     <div class="grid">
         <select id="filter-dropdown" aria-label="Filter by category">
             <option value="" {% if request.args.get('category') is none %}selected{% endif %}>All Categories</option>
