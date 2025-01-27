@@ -1,11 +1,24 @@
 from flask import Flask, render_template, g, request, jsonify, redirect, url_for, make_response
-import sqlite3
+import sqlite3, pickle
+from transformers import AutoProcessor, AutoModel
 from datetime import datetime
 
-app = Flask(__name__)
-
 DATABASE = 'papers.db'
+INDEX_FILE = 'index.pkl'
 CATEGORIES = ['cs.CL', 'cs.AI', 'cs.MA', 'cs.CV', 'cs.LG', 'cs.RO', 'cs.SY', 'cs.SI', 'cs.HC', 'cs.IR'] 
+
+vector_index, processor, model = None, None, None
+
+def before_app_init():
+    global vector_index, processor, model
+    with open(INDEX_FILE, 'rb') as f:
+        vector_index = pickle.load(f)
+    processor = AutoProcessor.from_pretrained("google/siglip-base-patch16-224")
+    model = AutoModel.from_pretrained("google/siglip-base-patch16-224")
+
+before_app_init()
+
+app = Flask(__name__)
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -66,9 +79,12 @@ def api_login():
 
 @app.route('/papers/<int:paper_id>')
 def paper(paper_id):
+    global vector_index
     db = get_db()
     paper = db.execute('SELECT * FROM papers WHERE id = ?', (paper_id,)).fetchone()
-    similar_papers = db.execute('SELECT * FROM papers WHERE category = ? AND id != ? LIMIT 10', (paper['category'], paper_id)).fetchall()
+    vec = vector_index.get_items([paper_id])
+    ids, _ = vector_index.knn_query(vec, k=10)
+    similar_papers = db.execute(f"SELECT * FROM papers WHERE id IN ({','.join(map(str, ids[0]))})").fetchall()
     return render_template('paper.html', paper=paper, similar_papers=similar_papers, page_title="Paper")
 
 @app.route('/papers/save', methods=['POST'])
@@ -76,7 +92,6 @@ def save_paper():
     data = request.get_json()
     user_id = data.get('user_id')
     paper_id = data.get('paper_id')
-    print("DEBUG", user_id, paper_id)
     db = get_db()
     db.execute('INSERT INTO user_saved_papers (user_id, paper_id) VALUES (?, ?)', (user_id, paper_id))
     db.commit()

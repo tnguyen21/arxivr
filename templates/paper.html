@@ -6,10 +6,10 @@
     <button class="save-paper-link" style="font-size: 0.8rem;" data-paper-id="{{ paper.id }}" onclick="savePaper('{{ paper.id }}')" aria-label="Save {{ paper.title }} to my papers">Save Paper</button>
     <a href="{{ paper.abstract_link }}" aria-label="View {{ paper.title }} on arXiv">View on arXiv</a>
     
-    <h2>You may also like:</h2>
+    <h2>Similar Papers:</h2>
     <ul>
         {% for paper in similar_papers %}
-            <li><a href="{{ url_for('paper', paper_id=paper.id) }}">{{ paper.title }}</a></li>
+            <li style="margin-top: 0.5rem;"><a href="{{ url_for('paper', paper_id=paper.id) }}">{{ paper.title }}</a></li>
         {% endfor %}
     </ul>
         
