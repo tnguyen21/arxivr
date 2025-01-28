@@ -125,8 +125,23 @@ def saved():
     if not user_id:
         return redirect(url_for('login'))
     db = get_db()
-    papers = db.execute('SELECT * FROM papers WHERE id IN (SELECT paper_id FROM user_saved_papers WHERE user_id = ?)', (user_id,)).fetchall()
-    return render_template('saved.html', papers=papers, page_title="Saved Papers")
+    
+    sort = request.args.get('sort', 'date')
+    category = request.args.get('category', None)
+
+    if category:
+        papers = db.execute('SELECT * FROM papers WHERE id IN (SELECT paper_id FROM user_saved_papers WHERE user_id = ?) AND category LIKE ? ORDER BY published DESC', (user_id, '%' + category + '%')).fetchall()
+    else:
+        papers = db.execute('SELECT * FROM papers WHERE id IN (SELECT paper_id FROM user_saved_papers WHERE user_id = ?) ORDER BY published DESC', (user_id,)).fetchall()
+    
+    if sort == 'date':
+        papers.sort(key=lambda x: datetime.strptime(x['published'], '%Y-%m-%dT%H:%M:%S%z'))
+    elif sort == 'title':
+        papers.sort(key=lambda x: x['title'])
+    elif sort == 'category':
+        papers.sort(key=lambda x: x['category'])
+    
+    return render_template('saved.html', papers=papers, page_title="Saved Papers", categories=CATEGORIES)
 
 @app.teardown_appcontext
 def close_connection(exception):

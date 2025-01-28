@@ -2,6 +2,32 @@
 
 {% block content %}
     <h1>Saved Papers</h1>
+    <div class="grid">
+        <select id="sort-dropdown" aria-label="Sort by">
+            <option value="date" selected>Sort by Date</option>
+            <option value="title">Sort by Title</option>
+            <option value="category">Sort by Category</option>
+        </select>
+        <select id="filter-dropdown" aria-label="Filter by category">
+            <option value="" selected>All Categories</option>
+            {% for category in categories %}
+                <option value="{{ category }}">{{ category }}</option>
+            {% endfor %}
+        </select>
+        <button onclick="applyFilters()">Apply</button>
+    </div>
+    <script>
+        function applyFilters() {
+            const sortDropdown = document.getElementById('sort-dropdown');
+            const filterDropdown = document.getElementById('filter-dropdown');
+            const selectedSort = sortDropdown.value;
+            const selectedCategory = filterDropdown.value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('sort', selectedSort);
+            url.searchParams.set('category', selectedCategory);
+            window.location.href = url.toString();
+        }
+    </script>
     <div id="snackbar" style="visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #333; color: #fff; text-align: center; border-radius: 2px; padding: 16px; position: fixed; z-index: 1; left: 50%; bottom: 30px; font-size: 17px;">Message</div>
     <script>
         function showSnackbar(message) {
