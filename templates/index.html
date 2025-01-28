@@ -2,7 +2,6 @@
 
 {% block content %}
     <h1>arxivr</h1>
-    <input type="text" id="search-bar" placeholder="Search papers..." aria-label="Search papers">
     <div class="grid">
         <select id="filter-dropdown" aria-label="Filter by category">
             <option value="" {% if request.args.get('category') is none %}selected{% endif %}>All Categories</option>
@@ -10,13 +9,11 @@
                 <option value="{{ category }}" {% if request.args.get('category') == category %}selected{% endif %}>{{ category }}</option>
             {% endfor %}
         </select>
-        <button onclick="filterPapers()">Search</button>
+        <button style="flex-grow: 1;" onclick="filterPapers()">Search</button>
     </div>
     <script>
         function filterPapers() {
-            // const searchBar = document.getElementById('search-bar');
             const filterDropdown = document.getElementById('filter-dropdown');
-            // const searchTerm = searchBar ? searchBar.value.toLowerCase() : '';
             const selectedCategory = filterDropdown ? filterDropdown.value : '';
             window.location.href = '/?category=' + selectedCategory;
         }
