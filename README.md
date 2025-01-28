@@ -13,4 +13,16 @@
     - again, with small summary on how it might relate to query?
 - set up site analytics
 
+## Serving
+
+prod
+```
+waitress-serve --port 8080 --host 127.0.0.1 app:app
+```
+
+dev
+```
+flask run --debug
+```
+
 inspired by [arxiv-sanity-lite](https://github.com/karpathy/arxiv-sanity-lite)
