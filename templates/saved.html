@@ -2,14 +2,33 @@
 
 {% block content %}
     <h1>Saved Papers</h1>
-    <ul>
+    <div id="snackbar" style="visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #333; color: #fff; text-align: center; border-radius: 2px; padding: 16px; position: fixed; z-index: 1; left: 50%; bottom: 30px; font-size: 17px;">Message</div>
+    <script>
+        function showSnackbar(message) {
+            const snackbar = document.getElementById("snackbar");
+            snackbar.textContent = message;
+            snackbar.style.visibility = "visible";
+            setTimeout(() => { snackbar.style.visibility = "hidden"; }, 3000);
+        }
+    </script>
+    <div>
     {% for paper in papers %}
-        <li>{{ paper.title }}</li>
-        <form action="/papers/unsave" method="post" class="unsave-form" onsubmit="submitForm(event)">
-            <input type="hidden" name="paper_id" value="{{ paper.id }}">
-            <input type="hidden" name="user_id" value="{{ request.cookies.get('user_id') }}">
-            <button type="submit">Unsave</button>
-        </form>
+        <div>
+            <h3><a href="{{ url_for('paper', paper_id=paper.id) }}">{{ paper.title }}</a></h3>
+            <p class="paper-metadata">
+            <span aria-label="Published date" style="font-style: italic">{{ paper.published }}</span> |
+            <span aria-label="Paper category" style="font-weight: bold">{{ paper.category }}</span>
+            <br>
+            <span aria-label="Authors">{{ paper.author }}</span>
+            <br>
+            </p>
+            <p>{{ paper.summary }}</p>
+            <form action="{{ url_for('unsave_paper') }}" method="post" class="unsave-form" onsubmit="submitForm(event)">
+                <input type="hidden" name="paper_id" value="{{ paper.id }}">
+                <input type="hidden" name="user_id" value="{{ request.cookies.get('user_id') }}">
+                <button type="submit">Unsave</button>
+            </form>
+        </div>
         <script>
             function submitForm(event) {
                 event.preventDefault();
@@ -27,14 +46,13 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data.message);
+                    showSnackbar(data.message);
                 })
                 .catch((error) => {
                     console.error('Error:', error);
                 });
             }
         </script>
-        </form>
     {% endfor %}    
-    </ul>
+    </div>
 {% endblock %}
