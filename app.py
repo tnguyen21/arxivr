@@ -67,6 +67,7 @@ def login():
 def logout():
     response = make_response(redirect(url_for('index')))
     response.set_cookie('user_id', '', expires=0)
+    response.set_cookie('username', '', expires=0)
     return response
 
 @app.route('/api/login', methods=['POST'])
@@ -77,7 +78,8 @@ def api_login():
     db.execute('INSERT OR IGNORE INTO users (username) VALUES (?)', (username,))
     db.commit()
     user = db.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone()
-    return jsonify({'message': 'Login successful', 'user_id': user['id']}), 200
+    response = make_response(jsonify({'message': 'Login successful', 'user_id': user['id'], 'username': username}), 200)
+    return response
 
 # === Paper Routes ===
 

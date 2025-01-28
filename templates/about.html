@@ -2,11 +2,21 @@
 
 {% block content %}
     <h1>About</h1>
-    <p>arxivr makes browsing and finding papers on arXiv easier.</p>
+    <p>arxivr makes browsing arXiv papers cool.</p>
     <p>Inspired by <a href="https://arxiv-sanity-lite.com/">arxiv-sanity-lite.com</a></p>
+    <p>Styles from <a href="https://github.com/owickstrom/the-monospace-web/tree/main">the monospace web</a></p>
 
     <h2>How it works</h2>
-    <p>arxivr uses a combination of common search techniques and vector search to find papers.</p>
+    <p>arxivr uses vector embeddings from <a href="https://huggingface.co/docs/transformers/en/model_doc/siglip">SigLIP</a> and <a href="https://github.com/nmslib/hnswlib">hnswlib</a> (approximate nearest neighbor search) to find similar papers.</p>
     <p>Abstracts have been pulled from the following categories: cs.CL, cs.AI, cs.MA, cs.CV, cs.LG, cs.RO, cs.SY, cs.SI, cs.HC, cs.IR, between the years 2021-2025. They're stored in a local sqlite database, which is queried on every page load.</p>
-    <p>The vector search is powered by <a href="https://huggingface.co/google/siglip-base-patch16-224">siglip</a>, a vision-language model, and hnswlib for approximate nearest neighbor search.</p>
+
+    <h2>aspirations</h2>
+    <ul>
+        <li>add more categories</li>
+        <li>daily ingest of new papers</li>
+        <li>text search (maybe BM25 or TF-IDF, or maybe vector search, or some third thing)</li>
+        <li>personalized recommendations based on saved papers</li>
+    </ul>
+
+    <p>made by a <a href="https://github.com/tnguyen21">human</a></p>
 {% endblock %}

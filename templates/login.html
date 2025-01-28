@@ -5,7 +5,7 @@
     <h1>Login</h1>
     <div style="border: var(--border-thickness) solid var(--text-color); padding: var(--line-height);">
         <p>
-            Like arxiv-sanity-lite, this site uses a super lite version of "user accounts" where there are no passwords. Basically, you can "log in" with any arbitrary username. If you'd like to keep your account private, just make your username be something unique and write it down somewhere safe.
+            Like <a href="https://arxiv-sanity-lite.com/">arxiv-sanity-lite,</a> this site uses a super lite version of "user accounts" where there are no passwords. Basically, you can "log in" with any arbitrary username. If you'd like to keep your account private, just make your username be something unique and write it down somewhere safe.
         </p>
         <p>
             <strong>TLDR: there are no passwords!</strong>
@@ -34,6 +34,7 @@
             if (response.ok) {
                 const data = await response.json();
                 localStorage.setItem('user_id', data.user_id);
+                localStorage.setItem('username', username);
                 document.cookie = `user_id=${data.user_id}; path=/`;
                 window.location.href = '/';
             } else {

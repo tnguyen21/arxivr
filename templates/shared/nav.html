@@ -4,6 +4,7 @@
     {% if request.cookies.get('user_id') %}
         <a href="{{ url_for('saved') }}">Saved Papers</a>
         <a href="{{ url_for('logout') }}">Logout</a>
+        <small>(logged in as {{ request.cookies.get('username') }})</small>
     {% else %}
         <a href="{{ url_for('login') }}">Login</a>
     {% endif %}
