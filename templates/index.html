@@ -30,8 +30,8 @@
           <br>
         </p>
         <p>{{ paper.summary }}</p>
-        <button class="save-paper-link" style="font-size: 0.8rem;" data-paper-id="{{ paper.id }}" onclick="savePaper('{{ paper.id }}')" aria-label="Save {{ paper.title }} to my papers">Save Paper</button>
-        <a href="{{ paper.abstract_link }}" aria-label="View {{ paper.title }} on arXiv">View on arXiv</a>
+        <button class="save-paper-link" data-paper-id="{{ paper.id }}" onclick="savePaper('{{ paper.id }}')" aria-label="Save {{ paper.title }} to my papers">Save Paper</button>
+        <a style="margin-left: 1rem;" href="{{ paper.abstract_link }}" aria-label="View {{ paper.title }} on arXiv">View on arXiv</a>
         <script>
         async function savePaper(paperId) {
             const userId = localStorage.getItem('user_id');
