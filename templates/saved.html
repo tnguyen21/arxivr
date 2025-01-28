@@ -13,7 +13,7 @@
     </script>
     <div>
     {% for paper in papers %}
-        <div>
+        <div id="paper-{{ paper.id }}">
             <h3><a href="{{ url_for('paper', paper_id=paper.id) }}">{{ paper.title }}</a></h3>
             <p class="paper-metadata">
             <span aria-label="Published date" style="font-style: italic">{{ paper.published }}</span> |
@@ -23,36 +23,42 @@
             <br>
             </p>
             <p>{{ paper.summary }}</p>
-            <form action="{{ url_for('unsave_paper') }}" method="post" class="unsave-form" onsubmit="submitForm(event)">
+            <form action="{{ url_for('unsave_paper') }}" method="post" class="unsave-form" onsubmit="submitForm(event, {{ paper.id }})">
                 <input type="hidden" name="paper_id" value="{{ paper.id }}">
                 <input type="hidden" name="user_id" value="{{ request.cookies.get('user_id') }}">
                 <button type="submit">Unsave</button>
             </form>
         </div>
-        <script>
-            function submitForm(event) {
-                event.preventDefault();
-                const form = event.target;
-                const data = {
-                    paper_id: form.paper_id.value,
-                    user_id: form.user_id.value
-                };
-                fetch(form.action, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    showSnackbar(data.message);
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                });
-            }
-        </script>
     {% endfor %}    
     </div>
+    <script>
+        function submitForm(event, paperId) {
+            event.preventDefault();
+            const form = event.target;
+            const data = {
+                paper_id: form.paper_id.value,
+                user_id: form.user_id.value
+            };
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                showSnackbar(data.message);
+                if (data.message === 'Paper unsaved successfully') {
+                    const paperDiv = document.getElementById('paper-' + paperId);
+                    if (paperDiv) {
+                        paperDiv.remove();
+                    }
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
 {% endblock %}
