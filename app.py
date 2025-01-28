@@ -79,6 +79,8 @@ def api_login():
     db.commit()
     user = db.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone()
     response = make_response(jsonify({'message': 'Login successful', 'user_id': user['id'], 'username': username}), 200)
+    response.set_cookie('user_id', str(user['id']))
+    response.set_cookie('username', username)
     return response
 
 # === Paper Routes ===
