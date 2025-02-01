@@ -13,8 +13,8 @@ def before_app_init():
     global vector_index, processor, model
     with open(INDEX_FILE, 'rb') as f:
         vector_index = pickle.load(f)
-    processor = AutoProcessor.from_pretrained("google/siglip-base-patch16-224")
-    model = AutoModel.from_pretrained("google/siglip-base-patch16-224")
+    # processor = AutoProcessor.from_pretrained("google/siglip-base-patch16-224")
+    # model = AutoModel.from_pretrained("google/siglip-base-patch16-224")
 
 before_app_init()
 
