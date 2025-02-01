@@ -30,3 +30,6 @@ CREATE TABLE user_saved_papers (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (paper_id) REFERENCES papers(id) ON DELETE CASCADE
 );
+
+CREATE INDEX IF NOT EXISTS idx_papers_published ON papers(published DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_user_saved_papers ON user_saved_papers(user_id, paper_id);
