@@ -11,7 +11,6 @@
   - in email reports of new papers, have LLM summarize new paper/how paper relates to other saved papers?
   - or save off natural language queries and alert on papers that pass similarity threshold on natural lang query
     - again, with small summary on how it might relate to query?
-- set up site analytics
 
 ## Serving
 
