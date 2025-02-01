@@ -35,7 +35,10 @@ def index():
     search = request.args.get('search', None)
     offset = (page - 1) * per_page
 
-    if search:
+    if search and category:
+        papers = db.execute("SELECT p.id, p.title, p.author, p.summary, p.category, strftime('%F', p.published) as published FROM papers_summary_fts fts JOIN papers p ON fts.rowid = p.id WHERE papers_summary_fts MATCH ? AND p.category LIKE ? ORDER BY p.published DESC LIMIT ? OFFSET ?", (search, '%' + category + '%', per_page, offset)).fetchall()
+        total_papers = db.execute("SELECT COUNT(*) as count FROM papers_summary_fts fts JOIN papers p ON fts.rowid = p.id WHERE papers_summary_fts MATCH ? AND p.category LIKE ?", (search, '%' + category + '%')).fetchone()['count']
+    elif search:
         papers = db.execute("SELECT p.id, p.title, p.author, p.summary, p.category, strftime('%F', p.published) as published FROM papers_summary_fts fts JOIN papers p ON fts.rowid = p.id WHERE papers_summary_fts MATCH ? ORDER BY p.published DESC LIMIT ? OFFSET ?", (search, per_page, offset)).fetchall()
         total_papers = db.execute("SELECT COUNT(*) as count FROM papers_summary_fts fts JOIN papers p ON fts.rowid = p.id WHERE papers_summary_fts MATCH ?", (search,)).fetchone()['count']
     elif category:
