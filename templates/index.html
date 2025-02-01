@@ -2,7 +2,7 @@
 
 {% block content %}
     <h1>arxivr</h1>
-    <input type="text" id="search-input" placeholder="Search papers..." aria-label="Search papers" value="{{ request.args.get('search', '') }}">
+    <input type="text" id="search-input" placeholder="Search papers..." aria-label="Search papers" value="{{ request.args.get('search', '') }}" onkeydown="if (event.key === 'Enter') filterPapers()">
     <div class="grid">
         <select id="filter-dropdown" aria-label="Filter by category">
             <option value="" {% if request.args.get('category') is none %}selected{% endif %}>All Categories</option>
