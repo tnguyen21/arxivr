@@ -32,10 +32,14 @@ def index():
     per_page = 10  # Number of papers per page
     page = request.args.get('page', 1, type=int)  # Get the page number from the query parameters
     category = request.args.get('category', None)
+    search = request.args.get('search', None)
     offset = (page - 1) * per_page
 
-    if category:
-        papers = db.execute('SELECT id, title, author, summary, categoryabstract, strftime("%F", published) as published FROM papers WHERE category LIKE ? ORDER BY published DESC LIMIT ? OFFSET ?', ('%' + category + '%', per_page, offset)).fetchall()
+    if search:
+        papers = db.execute("SELECT p.id, p.title, p.author, p.summary, p.category, strftime('%F', p.published) as published FROM papers_summary_fts fts JOIN papers p ON fts.rowid = p.id WHERE papers_summary_fts MATCH ? LIMIT 100", (search,)).fetchall()
+        total_papers = db.execute('SELECT COUNT(*) as count FROM papers WHERE category LIKE ?', ('%' + category + '%',)).fetchone()['count']
+    elif category:
+        papers = db.execute('SELECT id, title, author, summary, category, strftime("%F", published) as published FROM papers WHERE category LIKE ? ORDER BY published DESC LIMIT ? OFFSET ?', ('%' + category + '%', per_page, offset)).fetchall()
         total_papers = db.execute('SELECT COUNT(*) as count FROM papers WHERE category LIKE ?', ('%' + category + '%',)).fetchone()['count']
     else:
         papers = db.execute('SELECT id, title, author, summary, category, strftime("%F", published) as published FROM papers ORDER BY published DESC LIMIT ? OFFSET ?', (per_page, offset)).fetchall()
