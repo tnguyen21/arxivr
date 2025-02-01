@@ -36,8 +36,8 @@ def index():
     offset = (page - 1) * per_page
 
     if search:
-        papers = db.execute("SELECT p.id, p.title, p.author, p.summary, p.category, strftime('%F', p.published) as published FROM papers_summary_fts fts JOIN papers p ON fts.rowid = p.id WHERE papers_summary_fts MATCH ? LIMIT 100", (search,)).fetchall()
-        total_papers = db.execute('SELECT COUNT(*) as count FROM papers WHERE category LIKE ?', ('%' + category + '%',)).fetchone()['count']
+        papers = db.execute("SELECT p.id, p.title, p.author, p.summary, p.category, strftime('%F', p.published) as published FROM papers_summary_fts fts JOIN papers p ON fts.rowid = p.id WHERE papers_summary_fts MATCH ? ORDER BY p.published DESC LIMIT ? OFFSET ?", (search, per_page, offset)).fetchall()
+        total_papers = db.execute("SELECT COUNT(*) as count FROM papers_summary_fts fts JOIN papers p ON fts.rowid = p.id WHERE papers_summary_fts MATCH ?", (search,)).fetchone()['count']
     elif category:
         papers = db.execute('SELECT id, title, author, summary, category, strftime("%F", published) as published FROM papers WHERE category LIKE ? ORDER BY published DESC LIMIT ? OFFSET ?', ('%' + category + '%', per_page, offset)).fetchall()
         total_papers = db.execute('SELECT COUNT(*) as count FROM papers WHERE category LIKE ?', ('%' + category + '%',)).fetchone()['count']
