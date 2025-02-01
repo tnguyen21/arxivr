@@ -10,6 +10,9 @@ CREATE TABLE papers (
   updated DATETIME NOT NULL,
   summary TEXT NOT NULL,
   author TEXT NOT NULL,
+  -- TODO might be better for category to be a separate table that we join here
+  -- that way category filters might run a bit faster + we can add/remove categories more easily
+  -- rather than hardcode the N categories i already am pulling from arxiv
   category TEXT NOT NULL,
   pdf_link TEXT NOT NULL,
   abstract_link TEXT NOT NULL,
