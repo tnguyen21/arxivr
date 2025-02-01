@@ -70,16 +70,16 @@
       </li>
     {% endfor %}
     </ul>
-    <div class="pagination">
-        {% if has_prev %}
-            <a href="{{ url_for('index', page=page-1, category=request.args.get('category')) }}">&laquo; Previous</a>
-        {% endif %}
-        
-        <span>Page {{ page }} of {{ total_pages }}</span>
-        
-        {% if has_next %}
-            <a href="{{ url_for('index', page=page+1, category=request.args.get('category')) }}">Next &raquo;</a>
-        {% endif %}
-    </div>
+       <div class="pagination">
+            {% if has_prev %}
+                <a href="{{ url_for('index', page=page-1, category=request.args.get('category'), search=request.args.get('search', '')) }}">&laquo; Previous</a>
+            {% endif %}
+            
+            <span>Page {{ page }} of {{ total_pages }}</span>
+            
+            {% if has_next %}
+                <a href="{{ url_for('index', page=page+1, category=request.args.get('category'), search=request.args.get('search', '')) }}">Next &raquo;</a>
+            {% endif %}
+        </div>
     </ul>
 {% endblock %}
