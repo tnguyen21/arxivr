@@ -1,6 +1,6 @@
 from flask import Flask, render_template, g, request, jsonify, redirect, url_for, make_response
 import sqlite3, pickle
-from transformers import AutoProcessor, AutoModel
+# from transformers import AutoProcessor, AutoModel
 from datetime import datetime
 
 DATABASE = 'papers.db'
