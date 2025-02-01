@@ -1,7 +1,6 @@
 from flask import Flask, render_template, g, request, jsonify, redirect, url_for, make_response
-import sqlite3, pickle
+import sqlite3, pickle, datetime
 # from transformers import AutoProcessor, AutoModel
-from datetime import datetime
 
 DATABASE = 'papers.db'
 INDEX_FILE = 'index.pkl'
@@ -48,7 +47,19 @@ def index():
 
 @app.route('/about')
 def about():
-    return render_template('about.html', page_title="About")
+    db = get_db()
+    current_papers_count = db.execute('SELECT COUNT(*) as count FROM papers').fetchone()['count']
+    earliest_paper_indexed = db.execute('SELECT strftime("%F", MIN(published)) as earliest FROM papers').fetchone()['earliest']
+    latest_paper_indexed = db.execute('SELECT strftime("%F", MAX(published)) as latest FROM papers').fetchone()['latest']
+    current_time = datetime.datetime.now()
+    last_24_hours = current_time - datetime.timedelta(hours=24)
+    last_72_hours = current_time - datetime.timedelta(hours=72)
+    last_168_hours = current_time - datetime.timedelta(hours=168)
+
+    papers_last_24 = db.execute('SELECT COUNT(*) as count FROM papers WHERE published >= ?', (last_24_hours,)).fetchone()['count']
+    papers_last_72 = db.execute('SELECT COUNT(*) as count FROM papers WHERE published >= ?', (last_72_hours,)).fetchone()['count']
+    papers_last_168 = db.execute('SELECT COUNT(*) as count FROM papers WHERE published >= ?', (last_168_hours,)).fetchone()['count']
+    return render_template('about.html', current_papers_count=current_papers_count, earliest_paper_indexed=earliest_paper_indexed, latest_paper_indexed=latest_paper_indexed, papers_last_24=papers_last_24, papers_last_72=papers_last_72, papers_last_168=papers_last_168)
 
 @app.errorhandler(404)
 def not_found(error):
@@ -136,7 +147,7 @@ def saved():
         papers = db.execute('SELECT * FROM papers WHERE id IN (SELECT paper_id FROM user_saved_papers WHERE user_id = ?) ORDER BY published DESC', (user_id,)).fetchall()
     
     if sort == 'date':
-        papers.sort(key=lambda x: datetime.strptime(x['published'], '%Y-%m-%dT%H:%M:%S%z'))
+        papers.sort(key=lambda x: datetime.datetime.strptime(x['published'], '%Y-%m-%dT%H:%M:%S%z'))
     elif sort == 'title':
         papers.sort(key=lambda x: x['title'])
     elif sort == 'category':
