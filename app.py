@@ -35,7 +35,7 @@ def index():
     offset = (page - 1) * per_page
 
     if category:
-        papers = db.execute('SELECT id, title, author, summary, categoryabstract, strftime("%d %b %Y", published) as published FROM papers WHERE category LIKE ? ORDER BY published DESC LIMIT ? OFFSET ?', ('%' + category + '%', per_page, offset)).fetchall()
+        papers = db.execute('SELECT id, title, author, summary, categoryabstract, strftime("%F", published) as published FROM papers WHERE category LIKE ? ORDER BY published DESC LIMIT ? OFFSET ?', ('%' + category + '%', per_page, offset)).fetchall()
         total_papers = db.execute('SELECT COUNT(*) as count FROM papers WHERE category LIKE ?', ('%' + category + '%',)).fetchone()['count']
     else:
         papers = db.execute('SELECT id, title, author, summary, category, strftime("%F", published) as published FROM papers ORDER BY published DESC LIMIT ? OFFSET ?', (per_page, offset)).fetchall()
@@ -142,12 +142,13 @@ def saved():
     category = request.args.get('category', None)
 
     if category:
-        papers = db.execute('SELECT * FROM papers WHERE id IN (SELECT paper_id FROM user_saved_papers WHERE user_id = ?) AND category LIKE ? ORDER BY published DESC', (user_id, '%' + category + '%')).fetchall()
+        papers = db.execute('SELECT id, title, author, strftime("%F", published) as published, category, summary FROM papers WHERE id IN (SELECT paper_id FROM user_saved_papers WHERE user_id = ?) AND category LIKE ? ORDER BY published DESC', (user_id, '%' + category + '%')).fetchall()
     else:
-        papers = db.execute('SELECT * FROM papers WHERE id IN (SELECT paper_id FROM user_saved_papers WHERE user_id = ?) ORDER BY published DESC', (user_id,)).fetchall()
-    
+        papers = db.execute('SELECT id, title, author, strftime("%F", published) as published, category, summary FROM papers WHERE id IN (SELECT paper_id FROM user_saved_papers WHERE user_id = ?) ORDER BY published DESC', (user_id,)).fetchall()
+        papers = [dict(paper) for paper in papers]  # Convert to dict for easier date parsing
+        papers.sort(key=lambda x: datetime.datetime.strptime(x['published'], '%Y-%m-%d'))
     if sort == 'date':
-        papers.sort(key=lambda x: datetime.datetime.strptime(x['published'], '%Y-%m-%dT%H:%M:%S%z'))
+        papers.sort(key=lambda x: datetime.datetime.strptime(x['published'], '%Y-%m-%d'))
     elif sort == 'title':
         papers.sort(key=lambda x: x['title'])
     elif sort == 'category':
