@@ -35,20 +35,13 @@ def index():
     category = request.args.get('category', None)
     offset = (page - 1) * per_page
 
-    # TODO figure out better scheme and indexes to make this faster if we need to
     if category:
-        papers = db.execute('SELECT * FROM papers WHERE category LIKE ? ORDER BY published DESC LIMIT ? OFFSET ?', ('%' + category + '%', per_page, offset)).fetchall()
+        papers = db.execute('SELECT id, title, author, summary, categoryabstract, strftime("%d %b %Y", published) as published FROM papers WHERE category LIKE ? ORDER BY published DESC LIMIT ? OFFSET ?', ('%' + category + '%', per_page, offset)).fetchall()
         total_papers = db.execute('SELECT COUNT(*) as count FROM papers WHERE category LIKE ?', ('%' + category + '%',)).fetchone()['count']
     else:
-        papers = db.execute('SELECT * FROM papers ORDER BY published DESC LIMIT ? OFFSET ?', (per_page, offset)).fetchall()
+        papers = db.execute('SELECT id, title, author, summary, category, strftime("%F", published) as published FROM papers ORDER BY published DESC LIMIT ? OFFSET ?', (per_page, offset)).fetchall()
         total_papers = db.execute('SELECT COUNT(*) as count FROM papers').fetchone()['count']
-    
-    # TODO this will slow down the page load; should just have nicely formatted dates in the database
-    # Format the published date for each paper
-    papers = [dict(paper) for paper in papers]
-    for paper in papers:
-        paper['published'] = datetime.strptime(paper['published'], '%Y-%m-%dT%H:%M:%S%z').strftime('%d %b %Y')
-    
+
     # Get total count of papers for pagination, considering the category filter
     total_pages = (total_papers + per_page - 1) // per_page  # Ceiling division
     return render_template('index.html', papers=papers, page=page, total_pages=total_pages, has_prev=page > 1, has_next=page < total_pages, categories=CATEGORIES)
