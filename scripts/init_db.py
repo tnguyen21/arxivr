@@ -1,6 +1,6 @@
 import sqlite3, sys, logging, requests, time
 import xml.etree.ElementTree as ET
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 
 logging.basicConfig(level=logging.INFO)
@@ -49,7 +49,7 @@ def scrape_arxiv(category: List[str], start_date: str, end_date: str, db_file: s
         max_results=10
     )
     start = 0
-
+    logging.info(ARXIV_EXPORT_URL + query)
     response = requests.get(ARXIV_EXPORT_URL + query)
     root = ET.fromstring(response.text)
     total_results_element = root.find('{http://a9.com/-/spec/opensearch/1.1/}totalResults')
@@ -181,10 +181,9 @@ if __name__ == '__main__':
     # end_year = 2026
     cats = ['cs.CL', 'cs.AI', 'cs.MA', 'cs.CV', 'cs.LG', 'cs.RO', 'cs.SY', 'cs.SI', 'cs.HC', 'cs.IR'] 
 
-    # Get yesterday's date
-    yesterday = datetime.now().date()
-    start_date = format_date(yesterday.strftime("%Y-%m-%d"))
-    end_date = format_date((yesterday + timedelta(days=1)).strftime("%Y-%m-%d"))
+    today = datetime.now().date()
+    start_date = format_date((today - timedelta(days=3)).strftime("%Y-%m-%d"))
+    end_date = format_date((today).strftime("%Y-%m-%d"))
     
     logging.info(f"scraping {start_date} to {end_date}")
     scrape_arxiv(
