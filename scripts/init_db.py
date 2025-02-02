@@ -177,34 +177,32 @@ if __name__ == '__main__':
     db_file = sys.argv[2] if len(sys.argv) > 2 else 'papers.db'
     # init_db(schema_file, db_file)
     
-    start_year = 2022
-    end_year = 2024
+    # start_year = 2024
+    # end_year = 2026
     cats = ['cs.CL', 'cs.AI', 'cs.MA', 'cs.CV', 'cs.LG', 'cs.RO', 'cs.SY', 'cs.SI', 'cs.HC', 'cs.IR'] 
 
-    # better to query all categories at once
-    # since papers have multiple categories; saves on number of queries
-    # for year in range(start_year, end_year):
-    #     for month in range(0, 12, 3):  # Iterate every 3 months
-    #         start_date = format_date(f"{year}-{month + 1:02d}-01")
-    #         end_date = format_date(f"{year}-{month + 4:02d}-01") if month + 4 <= 12 else format_date(f"{year + 1}-01-01")
-    #         logging.info(f"scraping {start_date} to {end_date}")
-    #         scrape_arxiv(
-    #             category=cats,
-    #             start_date=start_date,
-    #             end_date=end_date,
-    #             db_file=db_file,
-    #             max_results=500
-    #         )
-
+    # Get yesterday's date
+    yesterday = datetime.now().date()
+    start_date = format_date(yesterday.strftime("%Y-%m-%d"))
+    end_date = format_date((yesterday + timedelta(days=1)).strftime("%Y-%m-%d"))
+    
+    logging.info(f"scraping {start_date} to {end_date}")
+    scrape_arxiv(
+        category=cats,
+        start_date=start_date, 
+        end_date=end_date,
+        db_file=db_file,
+        max_results=500
+    )
     # retry failed queries
-    with open('failed_queries.txt', 'r') as f:
-        queries = f.readlines()
-        queries = [query.strip() for query in queries]  # remove newlines
-        formatted_queries = []
-        for query in queries:
-            # Extract the date range from the query
-            date_range = query.split('submittedDate:')[1].split('&')[0]
-            formatted_query = f"{query.split('Failed query: ')[1]}&date_range={date_range}"
-            formatted_queries.append(formatted_query)
-    retry_queries(formatted_queries)
+    # with open('failed_queries.txt', 'r') as f:
+    #     queries = f.readlines()
+    #     queries = [query.strip() for query in queries]  # remove newlines
+    #     formatted_queries = []
+    #     for query in queries:
+    #         # Extract the date range from the query
+    #         date_range = query.split('submittedDate:')[1].split('&')[0]
+    #         formatted_query = f"{query.split('Failed query: ')[1]}&date_range={date_range}"
+    #         formatted_queries.append(formatted_query)
+    # retry_queries(formatted_queries)
 
