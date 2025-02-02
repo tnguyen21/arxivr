@@ -35,17 +35,18 @@ def index():
     search = request.args.get('search', None)
     offset = (page - 1) * per_page
 
+    # TODO prefix match on category; create index on category
     if search and category:
-        papers = db.execute("SELECT p.id, p.title, p.author, p.summary, p.category, strftime('%Y-%m-%d', p.published) as published FROM papers_summary_fts fts JOIN papers p ON fts.rowid = p.id WHERE papers_summary_fts MATCH ? AND p.category LIKE ? ORDER BY p.published DESC LIMIT ? OFFSET ?", (search, '%' + category + '%', per_page, offset)).fetchall()
+        papers = db.execute("SELECT p.id, p.title, p.author, p.summary, p.category, p.published FROM papers_summary_fts fts JOIN papers p ON fts.rowid = p.id WHERE papers_summary_fts MATCH ? AND p.category LIKE ? ORDER BY p.published DESC LIMIT ? OFFSET ?", (search, '%' + category + '%', per_page, offset)).fetchall()
         total_papers = db.execute("SELECT COUNT(*) as count FROM papers_summary_fts fts JOIN papers p ON fts.rowid = p.id WHERE papers_summary_fts MATCH ? AND p.category LIKE ?", (search, '%' + category + '%')).fetchone()['count']
     elif search:
-        papers = db.execute("SELECT p.id, p.title, p.author, p.summary, p.category, strftime('%Y-%m-%d', p.published) as published FROM papers_summary_fts fts JOIN papers p ON fts.rowid = p.id WHERE papers_summary_fts MATCH ? ORDER BY p.published DESC LIMIT ? OFFSET ?", (search, per_page, offset)).fetchall()
+        papers = db.execute("SELECT p.id, p.title, p.author, p.summary, p.category, p.published FROM papers_summary_fts fts JOIN papers p ON fts.rowid = p.id WHERE papers_summary_fts MATCH ? ORDER BY p.published DESC LIMIT ? OFFSET ?", (search, per_page, offset)).fetchall()
         total_papers = db.execute("SELECT COUNT(*) as count FROM papers_summary_fts fts JOIN papers p ON fts.rowid = p.id WHERE papers_summary_fts MATCH ?", (search,)).fetchone()['count']
     elif category:
-        papers = db.execute('SELECT id, title, author, summary, category, strftime("%Y-%m-%d", published) as published FROM papers WHERE category LIKE ? ORDER BY published DESC LIMIT ? OFFSET ?', ('%' + category + '%', per_page, offset)).fetchall()
+        papers = db.execute('SELECT id, title, author, summary, category, published FROM papers WHERE category LIKE ? ORDER BY published DESC LIMIT ? OFFSET ?', ('%' + category + '%', per_page, offset)).fetchall()
         total_papers = db.execute('SELECT COUNT(*) as count FROM papers WHERE category LIKE ?', ('%' + category + '%',)).fetchone()['count']
     else:
-        papers = db.execute('SELECT id, title, author, summary, category, strftime("%Y-%m-%d", published) as published FROM papers ORDER BY published DESC LIMIT ? OFFSET ?', (per_page, offset)).fetchall()
+        papers = db.execute('SELECT id, title, author, summary, category, published FROM papers ORDER BY published DESC LIMIT ? OFFSET ?', (per_page, offset)).fetchall()
         total_papers = db.execute('SELECT COUNT(*) as count FROM papers').fetchone()['count']
 
     # Get total count of papers for pagination, considering the category filter
@@ -149,13 +150,13 @@ def saved():
     category = request.args.get('category', None)
 
     if category:
-        papers = db.execute('SELECT id, title, author, strftime("%Y-%m-%d", published) as published, category, summary FROM papers WHERE id IN (SELECT paper_id FROM user_saved_papers WHERE user_id = ?) AND category LIKE ? ORDER BY published DESC', (user_id, '%' + category + '%')).fetchall()
+        papers = db.execute('SELECT id, title, author, published, category, summary FROM papers WHERE id IN (SELECT paper_id FROM user_saved_papers WHERE user_id = ?) AND category LIKE ? ORDER BY published DESC', (user_id, '%' + category + '%')).fetchall()
     else:
-        papers = db.execute('SELECT id, title, author, strftime("%Y-%m-%d", published) as published, category, summary FROM papers WHERE id IN (SELECT paper_id FROM user_saved_papers WHERE user_id = ?) ORDER BY published DESC', (user_id,)).fetchall()
+        papers = db.execute('SELECT id, title, author, published, category, summary FROM papers WHERE id IN (SELECT paper_id FROM user_saved_papers WHERE user_id = ?) ORDER BY published DESC', (user_id,)).fetchall()
         papers = [dict(paper) for paper in papers]  # Convert to dict for easier date parsing
-        papers.sort(key=lambda x: datetime.datetime.strptime(x['published'], '%Y-%m-%d'))
+        papers.sort(key=lambda x: datetime.datetime.strptime(x['published'], '%Y-%m-%dT%H:%M:%SZ'))
     if sort == 'date':
-        papers.sort(key=lambda x: datetime.datetime.strptime(x['published'], '%Y-%m-%d'))
+        papers.sort(key=lambda x: datetime.datetime.strptime(x['published'], '%Y-%m-%dT%H:%M:%SZ'))
     elif sort == 'title':
         papers.sort(key=lambda x: x['title'])
     elif sort == 'category':
@@ -163,7 +164,6 @@ def saved():
     
     return render_template('saved.html', papers=papers, page_title="Saved Papers", categories=CATEGORIES)
 
-@app.teardown_appcontext
 def close_connection(exception):
     db = getattr(g, '_database', None)
     if db is not None:
