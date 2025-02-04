@@ -8,9 +8,13 @@
     
     <h2>Similar Papers:</h2>
     <ul>
-        {% for paper in similar_papers %}
-            <li style="margin-top: 0.5rem;"><a href="{{ url_for('paper', paper_id=paper.id) }}">{{ paper.title }}</a></li>
-        {% endfor %}
+        {% if similar_papers %}
+            {% for paper in similar_papers %}
+                <li style="margin-top: 0.5rem;"><a href="{{ url_for('paper', paper_id=paper.id) }}">{{ paper.title }}</a></li>
+            {% endfor %}
+        {% else %}
+            <p>Sorry, no similar papers (yet)</p>
+        {% endif %}
     </ul>
         
     <script>
