@@ -4,7 +4,7 @@
 
 - support natural language queries -- vector similarity search on things like "dl on games" or something like that
 - filter by vector similarity threshold (only cos sim)
-- daily paper ingest
+- daily update of abstract embeddings to power paper similarities
 - email notifcations of new papers on vectory similarity
   - or category (just API feature around it instaed of manaul email like arxiv)
 - save abstracts with notes
